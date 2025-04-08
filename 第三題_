@@ -1,0 +1,49 @@
+from scipy.integrate import dblquad
+
+def integrand(y, x):
+    return 2*y*np.sin(x) + np.cos(x)**2
+
+# 積分範圍
+y_lower = lambda x: np.sin(x)
+y_upper = lambda x: np.cos(x)
+x_lower, x_upper = 0, np.pi/4
+
+# (a) Simpson's 規則 (使用 scipy 的 dblquad，內部使用自適應算法)
+result_simp, _ = dblquad(integrand, x_lower, x_upper, y_lower, y_upper)
+
+# (b) Gaussian Quadrature (自定義實現)
+def double_gauss(f, a, b, n, m):
+    # 外部積分 (x)
+    x_nodes, x_weights = roots_legendre(n)
+    integral = 0
+    for i in range(n):
+        x = 0.5*(b - a)*x_nodes[i] + 0.5*(b + a)
+        # 內部積分 (y)，邊界為 sin(x) 到 cos(x)
+        y_low = np.sin(x)
+        y_high = np.cos(x)
+        # Gaussian Quadrature 計算內部積分
+        inner_integral = 0
+        y_nodes, y_weights = roots_legendre(m)
+        for j in range(m):
+            y = 0.5*(y_high - y_low)*y_nodes[j] + 0.5*(y_high + y_low)
+            inner_integral += y_weights[j] * f(y, x)
+        inner_integral *= 0.5*(y_high - y_low)
+        integral += x_weights[i] * inner_integral
+    return 0.5*(b - a)*integral
+
+result_gauss = double_gauss(integrand, 0, np.pi/4, 3, 3)
+
+# (c) 精確值
+def exact_integral():
+    # 內部積分: ∫ (2y sinx + cos²x) dy = [y² sinx + y cos²x]
+    inner = lambda x: (np.cos(x)**2 * np.sin(x) + np.cos(x)**3 - 
+                       np.sin(x)**3 - np.sin(x)*np.cos(x)**2)
+    # 外部積分: ∫ (cos³x - sin³x) dx
+    from scipy.integrate import quad
+    return quad(inner, 0, np.pi/4)[0]
+
+exact = exact_integral()
+
+print(f"(a) Simpson's 結果: {result_simp:.6f}")
+print(f"(b) Gaussian 結果 (n=m=3): {result_gauss:.6f}")
+print(f"(c) 精確值: {exact:.6f}")
