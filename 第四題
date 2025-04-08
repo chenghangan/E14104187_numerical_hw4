@@ -1,0 +1,16 @@
+# (a) ∫₀¹ x^{-1/4} sinx dx
+def integrand_a(x):
+    return np.sin(x) / x**(1/4)
+
+result_a, _ = quad(integrand_a, 0, 1)
+
+# (b) ∫₁^∞ x^{-4} sinx dx (使用 t = 1/x 代換)
+def integrand_b(t):
+    if t == 0:
+        return 0
+    return t**2 * np.sin(1/t)
+
+result_b, _ = quad(integrand_b, 0, 1)
+
+print(f"4(a) 結果: {result_a:.6f}")
+print(f"4(b) 結果: {result_b:.6f}")
