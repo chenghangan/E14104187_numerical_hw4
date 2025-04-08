@@ -1,0 +1,25 @@
+from scipy.special import roots_legendre
+
+def g(x):
+    return x**2 * np.log(x)
+
+# Gaussian Quadrature 函數
+def gauss_quad(f, a, b, n):
+    nodes, weights = roots_legendre(n)
+    integral = 0
+    for i in range(n):
+        x = 0.5*(b - a)*nodes[i] + 0.5*(b + a)
+        integral += weights[i] * f(x)
+    return 0.5*(b - a)*integral
+
+# 計算
+result_n3 = gauss_quad(g, 1, 1.5, 3)
+result_n4 = gauss_quad(g, 1, 1.5, 4)
+
+# 精確值
+from scipy.integrate import quad
+exact, _ = quad(g, 1, 1.5)
+
+print(f"n=3 結果: {result_n3:.6f}")
+print(f"n=4 結果: {result_n4:.6f}")
+print(f"精確值: {exact:.6f}")
